@@ -4,21 +4,43 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Premium Ripple Landing</title>
+
   <style>
-    :root {
-      --accent-color: #00c6ff; /* Button accent */
-      --hero-spacing-right: clamp(120px, 15vw, 220px); /* Adjustable inward shift */
+    /* ===========================
+       1. CUSTOM FONT INTEGRATION
+       =========================== */
+    @font-face {
+      font-family: 'ParkLaneLight';
+      src: url('./fonts/PARK-LANE-W00-LIGHT.woff2') format('woff2'),
+           url('./fonts/PARK-LANE-W00-LIGHT.woff') format('woff'),
+           url('./fonts/PARK-LANE-W00-LIGHT.TTF') format('truetype'); /* fallback */
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
     }
 
+    /* ===========================
+       2. GLOBAL VARIABLES
+       =========================== */
+    :root {
+      --accent-color: #00c6ff; /* Button accent color */
+      --hero-spacing-right: clamp(140px, 18vw, 260px); /* distance from right edge */
+    }
+
+    /* ===========================
+       3. GLOBAL RESET
+       =========================== */
     html, body {
       height: 100%;
       margin: 0;
       background: #0b0d10;
       overflow: hidden;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'ParkLaneLight', Arial, sans-serif;
     }
 
-    /* WebGL background canvas */
+    /* ===========================
+       4. WEBGL BACKGROUND
+       =========================== */
     #gl {
       position: fixed;
       inset: 0;
@@ -26,9 +48,16 @@
       height: 100vh;
       display: block;
       z-index: 0;
+      opacity: 0;
+      transition: opacity 1s ease-out; /* Smooth fade-in */
+    }
+    #gl.loaded {
+      opacity: 1;
     }
 
-    /* Optional subtle gradient fade on right edge */
+    /* ===========================
+       5. SUBTLE FADE GRADIENT
+       =========================== */
     .fade-overlay {
       position: fixed;
       inset: 0;
@@ -37,7 +66,9 @@
       z-index: 1;
     }
 
-    /* Container to align hero properly */
+    /* ===========================
+       6. HERO OVERLAY CONTAINER
+       =========================== */
     .overlay {
       position: fixed;
       inset: 0;
@@ -48,13 +79,14 @@
       z-index: 2;
     }
 
-    /* Hero wrapper: gives breathing room on right */
     .hero-wrapper {
-      margin-right: var(--hero-spacing-right); /* The main inward shift */
+      margin-right: var(--hero-spacing-right);
       pointer-events: auto;
     }
 
-    /* Hero content */
+    /* ===========================
+       7. HERO CONTENT
+       =========================== */
     .hero {
       display: flex;
       flex-direction: column;
@@ -66,7 +98,6 @@
       text-shadow: 0 2px 12px rgba(0,0,0,.45);
     }
 
-    /* Logo */
     .logo {
       width: clamp(90px, 18vmin, 160px);
       height: auto;
@@ -74,26 +105,26 @@
       margin-bottom: 10px;
     }
 
-    /* Headline */
     h1 {
       margin: 0;
-      font-weight: 700;
+      font-weight: 300; /* matches light weight */
       line-height: 1.1;
-      letter-spacing: 0.02em;
-      font-size: clamp(22px, 3.5vmin, 46px);
+      letter-spacing: 0.03em;
+      font-size: clamp(22px, 3.8vmin, 48px);
     }
 
-    /* Tagline */
     p.tagline {
       margin: 0;
       opacity: 0.9;
-      font-weight: 400;
+      font-weight: 300;
       line-height: 1.35;
       font-size: clamp(14px, 2vmin, 20px);
       max-width: 40ch;
     }
 
-    /* Explore button */
+    /* ===========================
+       8. EXPLORE BUTTON
+       =========================== */
     .btn-explore {
       display: inline-block;
       padding: 12px 28px;
@@ -106,6 +137,7 @@
       transition: background 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
       box-shadow: 0 4px 14px rgba(0,198,255,0.4);
       margin-top: 10px;
+      font-family: 'ParkLaneLight', Arial, sans-serif;
     }
     .btn-explore:hover {
       background: #00a2d4;
@@ -113,7 +145,9 @@
       box-shadow: 0 6px 20px rgba(0,198,255,0.6);
     }
 
-    /* Scroll hint text */
+    /* ===========================
+       9. SCROLL HINT TEXT
+       =========================== */
     .hint {
       position: fixed;
       left: 50%;
@@ -128,11 +162,13 @@
       z-index: 3;
     }
 
-    /* Fade-in animation */
+    /* ===========================
+       10. FADE-IN ANIMATION
+       =========================== */
     .overlay, #gl { animation: fadeIn .75s ease-out both; }
     @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
-    /* Safe area support for mobile */
+    /* Mobile safe area */
     @supports (padding: max(0px)) {
       .overlay {
         padding: max(16px, env(safe-area-inset-top))
@@ -145,17 +181,17 @@
 </head>
 <body>
 
-<!-- WebGL canvas -->
+<!-- WebGL Canvas for Ripple Effect -->
 <canvas id="gl"></canvas>
 
-<!-- Optional gradient fade -->
+<!-- Optional Gradient Overlay -->
 <div class="fade-overlay"></div>
 
-<!-- Overlay with hero content -->
+<!-- Overlay with Hero Content -->
 <div class="overlay">
   <div class="hero-wrapper">
     <div class="hero">
-      <img class="logo" src="./images/the-wave-towers-stacked-cream.png" alt="Brand Logo">
+      <img class="logo" src="./images/logo.png" alt="Brand Logo">
       <h1>Make Waves with Your Brand</h1>
       <p class="tagline">Crafting immersive experiences with clarity, depth, and motion.</p>
       <a href="#explore" class="btn-explore">Explore Tour</a>
@@ -163,14 +199,14 @@
   </div>
 </div>
 
-<!-- Bottom hint -->
+<!-- Hint -->
 <div class="hint">Move your mouse / tap to ripple</div>
 
 <script>
 /* ===========================
    CONFIGURATION
    =========================== */
-const BACKGROUND_URL = "./images/background-tower.jpg";
+const BACKGROUND_URL = "./images/background-tower.jpg"; // <-- your local image
 
 const MAX_DROPS = 10;
 const RIPPLE_AMPLITUDE = 0.012;
@@ -316,7 +352,7 @@ gl.enableVertexAttribArray(a_position);
 gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
 /* ===========================
-   LOAD BACKGROUND
+   LOAD BACKGROUND IMAGE
    =========================== */
 function createTexture(img) {
   const tex = gl.createTexture();
@@ -334,7 +370,10 @@ const image = new Image();
 image.crossOrigin = "anonymous";
 image.src = BACKGROUND_URL;
 let texture = null;
-image.onload = () => texture = createTexture(image);
+image.onload = () => {
+  texture = createTexture(image);
+  canvas.classList.add('loaded'); // smooth fade-in
+};
 
 /* ===========================
    UNIFORMS
@@ -431,7 +470,7 @@ function render(timeMs) {
 }
 requestAnimationFrame(render);
 
-// Initial ambient ripple
+// Initial ripple
 setTimeout(() => addDrop(0.5, 0.55, performance.now() * 0.001), 350);
 </script>
 
