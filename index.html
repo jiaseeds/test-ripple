@@ -6,9 +6,9 @@
   <title>Premium Ripple Landing</title>
   <style>
     :root {
-      --content-max-width: 1200px;
-      --accent-color: #00c6ff; /* button accent color */
+      --accent-color: #00c6ff; /* Button accent */
     }
+
     html, body {
       height: 100%;
       margin: 0;
@@ -17,41 +17,54 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* WebGL background canvas */
+    /* Background WebGL canvas */
     #gl {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;
       display: block;
+      z-index: 0;
     }
 
-    /* Main overlay container */
+    /* Optional gradient fade on right edge */
+    .fade-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(to left, rgba(11,13,16,0.25), rgba(11,13,16,0));
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Overlay container for content */
     .overlay {
       position: fixed;
       inset: 0;
       display: flex;
       align-items: center;
-      justify-content: flex-end; /* pushes to the right side */
+      justify-content: flex-end;
       padding: clamp(16px, 3vmin, 40px);
       pointer-events: none;
+      z-index: 2;
+
+      /* Extra breathing room from the right */
+      padding-right: clamp(60px, 8vw, 140px);
     }
 
-    /* Right-side content box */
+    /* Hero block (logo, headline, tagline, button) */
     .hero {
       display: flex;
       flex-direction: column;
-      align-items: center; /* <-- center-align internally */
-      justify-content: center;
-      text-align: center; /* <-- text is center-aligned */
-      max-width: 450px;
+      align-items: center; /* Center within block */
+      text-align: center; /* Center text */
+      max-width: 460px;
       gap: clamp(14px, 2vmin, 22px);
       color: #ffffff;
       text-shadow: 0 2px 12px rgba(0,0,0,.45);
       pointer-events: auto;
     }
 
-    /* Logo styling */
+    /* Logo */
     .logo {
       width: clamp(90px, 18vmin, 160px);
       height: auto;
@@ -98,11 +111,7 @@
       box-shadow: 0 6px 20px rgba(0,198,255,0.6);
     }
 
-    /* Subtle fade-in animation */
-    .overlay, #gl { animation: fadeIn .75s ease-out both; }
-    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-
-    /* Scroll hint */
+    /* Scroll hint text */
     .hint {
       position: fixed;
       left: 50%;
@@ -114,7 +123,12 @@
       text-transform: uppercase;
       pointer-events: none;
       user-select: none;
+      z-index: 3;
     }
+
+    /* Fade-in animation */
+    .overlay, #gl { animation: fadeIn .75s ease-out both; }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
     /* Safe area for mobile devices */
     @supports (padding: max(0px)) {
@@ -129,25 +143,30 @@
 </head>
 <body>
 
+<!-- WebGL canvas for ripple effect -->
 <canvas id="gl"></canvas>
 
-<!-- Overlay Content -->
+<!-- Gradient fade overlay -->
+<div class="fade-overlay"></div>
+
+<!-- Right-aligned content -->
 <div class="overlay">
   <div class="hero">
-    <img class="logo" id="logo" alt="Brand logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" />
-    <h1 id="headline">Make Waves with Your Brand</h1>
-    <p class="tagline" id="tagline">Crafting immersive experiences with clarity, depth, and motion.</p>
+    <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="Brand Logo">
+    <h1>Make Waves with Your Brand</h1>
+    <p class="tagline">Crafting immersive experiences with clarity, depth, and motion.</p>
     <a href="#explore" class="btn-explore">Explore Tour</a>
   </div>
 </div>
 
+<!-- Bottom hint text -->
 <div class="hint">Move your mouse / tap to ripple</div>
 
 <script>
 /* ===========================
-   TUNABLES
+   CONFIGURATION
    =========================== */
-const BACKGROUND_URL = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop"; // background
+const BACKGROUND_URL = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop";
 
 const MAX_DROPS = 10;
 const RIPPLE_AMPLITUDE = 0.012;
@@ -157,14 +176,16 @@ const DISTANCE_DECAY = 3.5;
 const TIME_DECAY = 0.9;
 const CHROMA = 0.0017;
 const MOUSE_THROTTLE_MS = 30;
-/* =========================== */
 
+/* ===========================
+   SETUP WEBGL CONTEXT
+   =========================== */
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
 const canvas = document.getElementById('gl');
 const gl = canvas.getContext('webgl', { antialias: true, alpha: true, powerPreference: "high-performance" });
 
 if (!gl) {
-  document.body.innerHTML = "<div style='display:grid;place-items:center;height:100vh;color:#fff;text-align:center;padding:24px'>Your browser doesn't support WebGL. Please try a modern browser.</div>";
+  document.body.innerHTML = "<div style='display:grid;place-items:center;height:100vh;color:#fff;text-align:center;padding:24px'>Your browser doesn't support WebGL.</div>";
   throw new Error("WebGL not supported");
 }
 
@@ -182,7 +203,9 @@ function resize() {
 window.addEventListener('resize', resize, { passive: true });
 resize();
 
-/* ---------- Shaders ---------- */
+/* ===========================
+   SHADERS
+   =========================== */
 const vs = `
 attribute vec2 a_position;
 varying vec2 v_uv;
@@ -247,7 +270,9 @@ void main() {
   gl_FragColor = base;
 }`;
 
-/* ---------- WebGL Setup ---------- */
+/* ===========================
+   PROGRAM CREATION
+   =========================== */
 function createShader(type, source) {
   const s = gl.createShader(type);
   gl.shaderSource(s, source);
@@ -272,7 +297,9 @@ function createProgram(vsSource, fsSource) {
 const program = createProgram(vs, fs);
 gl.useProgram(program);
 
-/* ---------- Fullscreen Triangle ---------- */
+/* ===========================
+   FULLSCREEN TRIANGLE
+   =========================== */
 const quad = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, quad);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -284,7 +311,9 @@ const a_position = gl.getAttribLocation(program, "a_position");
 gl.enableVertexAttribArray(a_position);
 gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-/* ---------- Load Background Image ---------- */
+/* ===========================
+   LOAD BACKGROUND
+   =========================== */
 function createTexture(img) {
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -303,7 +332,9 @@ image.src = BACKGROUND_URL;
 let texture = null;
 image.onload = () => texture = createTexture(image);
 
-/* ---------- Uniforms ---------- */
+/* ===========================
+   UNIFORMS
+   =========================== */
 const uni = (name) => gl.getUniformLocation(program, name);
 const u_tex = uni("u_tex");
 const u_resolution = uni("u_resolution");
@@ -319,7 +350,9 @@ gl.uniform1f(uni("u_distDecay"), DISTANCE_DECAY);
 gl.uniform1f(uni("u_timeDecay"), TIME_DECAY);
 gl.uniform1f(uni("u_chroma"), CHROMA);
 
-/* ---------- Ripple State ---------- */
+/* ===========================
+   RIPPLE STATE
+   =========================== */
 const drops = Array.from({ length: MAX_DROPS }, () => ({
   active: 0,
   x: 0.5,
@@ -337,7 +370,9 @@ function addDrop(nx, ny, time) {
   dropCursor = (dropCursor + 1) % MAX_DROPS;
 }
 
-/* ---------- Interaction ---------- */
+/* ===========================
+   INTERACTION
+   =========================== */
 let lastEmit = 0;
 function emitFromEvent(e, multi = 1) {
   const rect = canvas.getBoundingClientRect();
@@ -365,7 +400,9 @@ window.addEventListener('mousemove', (e) => emitFromEvent(e, 1), { passive: true
 window.addEventListener('touchstart', (e) => emitFromEvent(e, 3), { passive: true });
 window.addEventListener('touchmove', (e) => emitFromEvent(e, 1), { passive: true });
 
-/* ---------- Render Loop ---------- */
+/* ===========================
+   RENDER LOOP
+   =========================== */
 function render(timeMs) {
   resize();
   const t = timeMs * 0.001;
