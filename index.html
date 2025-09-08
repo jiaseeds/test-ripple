@@ -13,11 +13,11 @@
       height: 100%;
       margin: 0;
       background: #0b0d10;
-      overflow: hidden; /* keep it immersive */
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      overflow: hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* WebGL canvas covers the screen */
+    /* WebGL background canvas */
     #gl {
       position: fixed;
       inset: 0;
@@ -26,31 +26,32 @@
       display: block;
     }
 
-    /* Overlay container */
+    /* Main overlay container */
     .overlay {
       position: fixed;
       inset: 0;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
-      pointer-events: none;
+      justify-content: flex-end; /* pushes to the right side */
       padding: clamp(16px, 3vmin, 40px);
+      pointer-events: none;
     }
 
-    /* Right-aligned hero content */
+    /* Right-side content box */
     .hero {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: center; /* <-- center-align internally */
+      justify-content: center;
+      text-align: center; /* <-- text is center-aligned */
       max-width: 450px;
-      text-align: right;
-      pointer-events: auto;
+      gap: clamp(14px, 2vmin, 22px);
       color: #ffffff;
       text-shadow: 0 2px 12px rgba(0,0,0,.45);
-      gap: clamp(14px, 2vmin, 22px);
+      pointer-events: auto;
     }
 
-    /* Logo */
+    /* Logo styling */
     .logo {
       width: clamp(90px, 18vmin, 160px);
       height: auto;
@@ -62,23 +63,22 @@
     h1 {
       margin: 0;
       font-weight: 700;
-      letter-spacing: .02em;
       line-height: 1.1;
+      letter-spacing: 0.02em;
       font-size: clamp(22px, 3.5vmin, 46px);
     }
 
     /* Tagline */
     p.tagline {
       margin: 0;
-      opacity: .9;
+      opacity: 0.9;
       font-weight: 400;
-      letter-spacing: .02em;
       line-height: 1.35;
       font-size: clamp(14px, 2vmin, 20px);
       max-width: 40ch;
     }
 
-    /* Premium Explore button */
+    /* Explore button */
     .btn-explore {
       display: inline-block;
       padding: 12px 28px;
@@ -102,7 +102,7 @@
     .overlay, #gl { animation: fadeIn .75s ease-out both; }
     @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
-    /* Scroll hint on desktop */
+    /* Scroll hint */
     .hint {
       position: fixed;
       left: 50%;
@@ -116,9 +116,14 @@
       user-select: none;
     }
 
-    /* Mobile safe area */
+    /* Safe area for mobile devices */
     @supports (padding: max(0px)) {
-      .overlay { padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+      .overlay {
+        padding: max(16px, env(safe-area-inset-top))
+                 max(16px, env(safe-area-inset-right))
+                 max(16px, env(safe-area-inset-bottom))
+                 max(16px, env(safe-area-inset-left));
+      }
     }
   </style>
 </head>
@@ -126,6 +131,7 @@
 
 <canvas id="gl"></canvas>
 
+<!-- Overlay Content -->
 <div class="overlay">
   <div class="hero">
     <img class="logo" id="logo" alt="Brand logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" />
@@ -139,18 +145,18 @@
 
 <script>
 /* ===========================
-   TUNABLES — tweak as needed
+   TUNABLES
    =========================== */
-const BACKGROUND_URL = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop"; // background image
+const BACKGROUND_URL = "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1920&auto=format&fit=crop"; // background
 
-const MAX_DROPS = 10;       // max ripples at once
-const RIPPLE_AMPLITUDE = 0.012; // displacement strength
-const RIPPLE_FREQUENCY = 24.0;  // wave frequency
-const RIPPLE_SPEED = 0.55;      // outward ripple speed
-const DISTANCE_DECAY = 3.5;     // distance fade
-const TIME_DECAY = 0.9;         // time fade
-const CHROMA = 0.0017;          // small chromatic aberration
-const MOUSE_THROTTLE_MS = 30;   // limit ripple spam
+const MAX_DROPS = 10;
+const RIPPLE_AMPLITUDE = 0.012;
+const RIPPLE_FREQUENCY = 24.0;
+const RIPPLE_SPEED = 0.55;
+const DISTANCE_DECAY = 3.5;
+const TIME_DECAY = 0.9;
+const CHROMA = 0.0017;
+const MOUSE_THROTTLE_MS = 30;
 /* =========================== */
 
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -166,7 +172,8 @@ function resize() {
   const w = Math.floor(window.innerWidth * dpr);
   const h = Math.floor(window.innerHeight * dpr);
   if (canvas.width !== w || canvas.height !== h) {
-    canvas.width = w; canvas.height = h;
+    canvas.width = w;
+    canvas.height = h;
     canvas.style.width = window.innerWidth + "px";
     canvas.style.height = window.innerHeight + "px";
     gl.viewport(0, 0, w, h);
@@ -240,7 +247,7 @@ void main() {
   gl_FragColor = base;
 }`;
 
-/* ---------- Setup Program ---------- */
+/* ---------- WebGL Setup ---------- */
 function createShader(type, source) {
   const s = gl.createShader(type);
   gl.shaderSource(s, source);
@@ -277,7 +284,7 @@ const a_position = gl.getAttribLocation(program, "a_position");
 gl.enableVertexAttribArray(a_position);
 gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-/* ---------- Load Background Texture ---------- */
+/* ---------- Load Background Image ---------- */
 function createTexture(img) {
   const tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -383,7 +390,7 @@ function render(timeMs) {
 }
 requestAnimationFrame(render);
 
-// Initial ripple
+// Initial ripple for ambience
 setTimeout(() => addDrop(0.5, 0.55, performance.now() * 0.001), 350);
 </script>
 
