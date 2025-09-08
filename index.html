@@ -7,6 +7,7 @@
   <style>
     :root {
       --accent-color: #00c6ff; /* Button accent */
+      --hero-spacing-right: clamp(120px, 15vw, 220px); /* Adjustable inward shift */
     }
 
     html, body {
@@ -17,7 +18,7 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Background WebGL canvas */
+    /* WebGL background canvas */
     #gl {
       position: fixed;
       inset: 0;
@@ -27,41 +28,42 @@
       z-index: 0;
     }
 
-    /* Optional gradient fade on right edge */
+    /* Optional subtle gradient fade on right edge */
     .fade-overlay {
       position: fixed;
       inset: 0;
-      background: linear-gradient(to left, rgba(11,13,16,0.25), rgba(11,13,16,0));
+      background: linear-gradient(to left, rgba(11,13,16,0.35), rgba(11,13,16,0));
       pointer-events: none;
       z-index: 1;
     }
 
-    /* Overlay container for content */
+    /* Container to align hero properly */
     .overlay {
       position: fixed;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      padding: clamp(16px, 3vmin, 40px);
       pointer-events: none;
       z-index: 2;
-
-      /* Extra breathing room from the right */
-      padding-right: clamp(60px, 8vw, 140px);
     }
 
-    /* Hero block (logo, headline, tagline, button) */
+    /* Hero wrapper: gives breathing room on right */
+    .hero-wrapper {
+      margin-right: var(--hero-spacing-right); /* The main inward shift */
+      pointer-events: auto;
+    }
+
+    /* Hero content */
     .hero {
       display: flex;
       flex-direction: column;
-      align-items: center; /* Center within block */
-      text-align: center; /* Center text */
+      align-items: center;
+      text-align: center;
       max-width: 460px;
       gap: clamp(14px, 2vmin, 22px);
       color: #ffffff;
       text-shadow: 0 2px 12px rgba(0,0,0,.45);
-      pointer-events: auto;
     }
 
     /* Logo */
@@ -130,7 +132,7 @@
     .overlay, #gl { animation: fadeIn .75s ease-out both; }
     @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
-    /* Safe area for mobile devices */
+    /* Safe area support for mobile */
     @supports (padding: max(0px)) {
       .overlay {
         padding: max(16px, env(safe-area-inset-top))
@@ -143,23 +145,25 @@
 </head>
 <body>
 
-<!-- WebGL canvas for ripple effect -->
+<!-- WebGL canvas -->
 <canvas id="gl"></canvas>
 
-<!-- Gradient fade overlay -->
+<!-- Optional gradient fade -->
 <div class="fade-overlay"></div>
 
-<!-- Right-aligned content -->
+<!-- Overlay with hero content -->
 <div class="overlay">
-  <div class="hero">
-    <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="Brand Logo">
-    <h1>Make Waves with Your Brand</h1>
-    <p class="tagline">Crafting immersive experiences with clarity, depth, and motion.</p>
-    <a href="#explore" class="btn-explore">Explore Tour</a>
+  <div class="hero-wrapper">
+    <div class="hero">
+      <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" alt="Brand Logo">
+      <h1>Make Waves with Your Brand</h1>
+      <p class="tagline">Crafting immersive experiences with clarity, depth, and motion.</p>
+      <a href="#explore" class="btn-explore">Explore Tour</a>
+    </div>
   </div>
 </div>
 
-<!-- Bottom hint text -->
+<!-- Bottom hint -->
 <div class="hint">Move your mouse / tap to ripple</div>
 
 <script>
@@ -178,7 +182,7 @@ const CHROMA = 0.0017;
 const MOUSE_THROTTLE_MS = 30;
 
 /* ===========================
-   SETUP WEBGL CONTEXT
+   WEBGL SETUP
    =========================== */
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
 const canvas = document.getElementById('gl');
@@ -427,7 +431,7 @@ function render(timeMs) {
 }
 requestAnimationFrame(render);
 
-// Initial ripple for ambience
+// Initial ambient ripple
 setTimeout(() => addDrop(0.5, 0.55, performance.now() * 0.001), 350);
 </script>
 
